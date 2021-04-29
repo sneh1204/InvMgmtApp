@@ -26,6 +26,8 @@ public class InvListAdapter extends RecyclerView.Adapter<InvListAdapter.UViewHol
 
     InvInterface am;
 
+    FirebaseFirestore db;
+
     String uid;
 
     public InvListAdapter(ArrayList<Services.Inventory> invs, String uid) {
@@ -61,7 +63,7 @@ public class InvListAdapter extends RecyclerView.Adapter<InvListAdapter.UViewHol
             holder.pic.setVisibility(View.GONE);
         }
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         holder.pos.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,6 +86,10 @@ public class InvListAdapter extends RecyclerView.Adapter<InvListAdapter.UViewHol
             @Override
             public void onClick(View view) {
                 inv.decrCount();
+                if (inv.getPro_count() <= 0) {
+                    delInv(inv);
+                    return;
+                }
                 HashMap<String, Object> upd = new HashMap<>();
                 upd.put("pro_count", inv.getPro_count() + "");
                 am.toggleDialog(true);
@@ -100,27 +106,7 @@ public class InvListAdapter extends RecyclerView.Adapter<InvListAdapter.UViewHol
         holder.del.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                am.toggleDialog(true);
-                DocumentReference dbc = db.collection(Services.DB_USERS).document(uid).collection(Services.DB_INV).document(inv.getId());
-                dbc.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (!inv.getRef().equals("")) {
-                            StorageReference storageReference = FirebaseStorage.getInstance().getReference().child(uid).child(inv.getRef());
-                            storageReference.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    am.toggleDialog(false);
-                                    if (task.isSuccessful()) {
-                                        am.showAlertDialog("Inventory deleted!");
-                                    } else {
-                                        task.getException().printStackTrace();
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
+                delInv(inv);
             }
         });
 
@@ -129,6 +115,30 @@ public class InvListAdapter extends RecyclerView.Adapter<InvListAdapter.UViewHol
             @Override
             public void onClick(View view) {
                 am.sendInvDetailFragment(inv);
+            }
+        });
+    }
+
+    public void delInv(Services.Inventory inv) {
+        am.toggleDialog(true);
+        DocumentReference dbc = db.collection(Services.DB_USERS).document(uid).collection(Services.DB_INV).document(inv.getId());
+        dbc.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                am.toggleDialog(false);
+                if (!inv.getRef().equals("")) {
+                    StorageReference storageReference = FirebaseStorage.getInstance().getReference().child(uid).child(inv.getRef());
+                    storageReference.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                am.showAlertDialog("Inventory deleted!");
+                            } else {
+                                task.getException().printStackTrace();
+                            }
+                        }
+                    });
+                }
             }
         });
     }
