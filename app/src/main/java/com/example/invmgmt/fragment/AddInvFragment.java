@@ -1,7 +1,10 @@
 package com.example.invmgmt.fragment;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -29,6 +32,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -36,6 +40,7 @@ public class AddInvFragment extends Fragment {
 
     private static final String INV = "inv";
     private static final int PICK_IMAGE = 100;
+    private static final int CLICK_IMAGE = 101;
     EditText name, cost, count, quantity, details, supplier;
     IAIInt am;
     Button pick;
@@ -75,7 +80,10 @@ public class AddInvFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE && resultCode == MainActivity.RESULT_OK) {
+        if (resultCode != MainActivity.RESULT_OK) return;
+
+        if (requestCode == PICK_IMAGE) {
+
             if (data != null) {
                 image_data = data.getData();
 
@@ -85,6 +93,25 @@ public class AddInvFragment extends Fragment {
                 preview.setVisibility(View.GONE);
             }
         }
+
+        if (requestCode == CLICK_IMAGE) {
+            if (data.getExtras().get("data") != null) {
+                Bitmap photo = (Bitmap) data.getExtras().get("data");
+                image_data = getImageUri(photo);
+
+                preview.setImageURI(image_data);
+                preview.setVisibility(View.VISIBLE);
+            } else {
+                preview.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private Uri getImageUri(Bitmap photo) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        photo.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(getContext().getContentResolver(), photo, "Title", null);
+        return Uri.parse(path);
     }
 
     @Override
@@ -125,8 +152,21 @@ public class AddInvFragment extends Fragment {
         pick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                startActivityForResult(gallery, PICK_IMAGE);
+                CharSequence[] cs = {"Gallery", "Camera"};
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Choose")
+                        .setItems(cs, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                if (i == 0) {
+                                    Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                                    startActivityForResult(gallery, PICK_IMAGE);
+                                } else {
+                                    Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                                    startActivityForResult(takePicture, CLICK_IMAGE);
+                                }
+                            }
+                        }).show();
             }
         });
 

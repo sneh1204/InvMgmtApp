@@ -78,16 +78,13 @@
         app:layout_constraintTop_toBottomOf="@+id/reg_password" />
 
     <TextView
-        android:id="@+id/reg_cancel"
+        android:id="@+id/textView25"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:layout_marginEnd="28dp"
-        android:layout_marginRight="28dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
         android:clickable="true"
         android:text="@string/cancel"
-        android:textColor="#4A3F3FB5"
-        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_submit" />
 

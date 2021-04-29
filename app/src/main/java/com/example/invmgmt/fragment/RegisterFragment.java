@@ -63,7 +63,7 @@ public class RegisterFragment extends Fragment {
         txt_email = view.findViewById(R.id.reg_email);
         txt_pass = view.findViewById(R.id.reg_password);
         sub_btn = view.findViewById(R.id.button_submit);
-        reg_cancel = view.findViewById(R.id.reg_cancel);
+        reg_cancel = view.findViewById(R.id.textView25);
 
         sub_btn.setOnClickListener(new View.OnClickListener() {
             @Override
