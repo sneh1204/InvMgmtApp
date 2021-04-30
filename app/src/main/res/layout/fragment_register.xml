@@ -5,6 +5,7 @@
     android:id="@+id/button_new_account"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/check"
     tools:context=".fragment.RegisterFragment">
 
     <!-- TODO: Update blank fragment layout -->
